@@ -44,6 +44,17 @@ public:
             
             cout<<"First element pushed into empty Deque"<<endl;
         }
+        else{
+           struct QNode *temp =new (struct QNode);
+            temp->right=NULL;
+            temp->left=leftSentinel;
+            temp->val=val;
+            leftSentinel->left=temp;
+            leftSentinel=temp;
+            top1++;
+            cout<<"Element pushed to the left "<<endl;
+
+        }
         // TODO
     }
     
@@ -74,6 +85,8 @@ int main(int argc, const char * argv[]) {
     cout << "Hello, World!\n";
     DQueue d;
     d.PushLeft(4);
+    d.PushLeft(5);
+    d.PushLeft(6);
     return 0;
 }
 
