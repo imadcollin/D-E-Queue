@@ -6,6 +6,8 @@
 //  Copyright © 2017 Imad Collin. All rights reserved.
 //
 
+#define transaction 1
+
 #include <iostream>
 using namespace std;
 class DQueue
@@ -19,75 +21,124 @@ class DQueue
     QNode *leftSentinel, *rightSentinel;
     
 public:
-    int top1,top2;
+    
     DQueue()
     {
-        // TODO
         leftSentinel=NULL;
         rightSentinel=NULL;
-         top1=0;
-         top2=0;
-        
     }
     // pushes the given value to the left end of the deque
     void PushLeft(int val)
     {
-        //If no Elments!
-        if(top1+top2==0)
-        {
-         leftSentinel=new (struct QNode);
-            
-            leftSentinel->val=val;
-            leftSentinel->left=NULL;
-            leftSentinel->right=NULL;
-            top1++;
-            
-            cout<<"First element pushed into empty Deque"<<endl;
+#if transaction
+        __transaction_atomic{
+#endif
+            //If no Elements!
+            if(leftSentinel==NULL)
+            {
+                leftSentinel=new (struct QNode);
+                leftSentinel->val=val;
+                leftSentinel->left=NULL;
+                leftSentinel->right=NULL;
+                rightSentinel = leftSentinel;
+            }
+            else{
+                struct QNode *temp =new (struct QNode);
+                temp->right=leftSentinel;
+                temp->left=NULL;
+                temp->val=val;
+                leftSentinel->left=temp;
+                leftSentinel=temp;
+            }
+#if transaction
         }
-        else{
-           struct QNode *temp =new (struct QNode);
-            temp->right=NULL;
-            temp->left=leftSentinel;
-            temp->val=val;
-            leftSentinel->left=temp;
-            leftSentinel=temp;
-            top1++;
-            cout<<"Element pushed to the left "<<endl;
-
-        }
-        // TODO
+#endif
     }
     
     // pushes the given value to the right end of the deque
     void PushRight(int val)
     {
-        // TODO
+#if transaction
+        __transaction_atomic{
+#endif
+            //If no Elments!
+            if(leftSentinel==NULL){
+                rightSentinel=new (struct QNode);
+                rightSentinel->val=val;
+                rightSentinel->left=NULL;
+                rightSentinel->right=NULL;
+                leftSentinel = rightSentinel;
+            }
+            else{
+                struct QNode *temp =new (struct QNode);
+                temp->left=rightSentinel;
+                temp->right=NULL;
+                temp->val=val;
+                rightSentinel->right=temp;
+                rightSentinel=temp;
+            }
+#if transaction
+        }
+#endif
     }
     
     // pops the leftmost value from the deque (-1 if empty)
     int PopLeft()
     {
-        // TODO
-        return -1;
+#if transaction
+        __transaction_atomic{
+#endif
+            if(leftSentinel==NULL){
+                return -1;
+            }
+            else{
+                int temp_val = leftSentinel->val;
+                QNode* temp_node = leftSentinel->right;
+                delete(leftSentinel);
+                leftSentinel=temp_node;
+                if(leftSentinel!=NULL){
+                    leftSentinel->left=NULL;
+                }
+                return temp_val;
+            }
+#if transaction
+        }
+#endif
     }
     
     // pops the rightmost value from the deque (-1 if empty)
     int PopRight()
     {
-        // TODO
-        return -1;
+#if transaction
+        __transaction_atomic{
+#endif
+            if(leftSentinel==NULL){
+                return -1;
+            }
+            else{
+                int temp_val = rightSentinel->val;
+                QNode* temp_node = leftSentinel->right;
+                delete(rightSentinel);
+                rightSentinel=temp_node;
+                if(rightSentinel!=NULL){
+                    rightSentinel->right=NULL;
+                }
+                return temp_val;
+            }
+#if transaction
+        }
+#endif
     }
-    
 };
 
 int main(int argc, const char * argv[]) {
     // insert code here...
-    cout << "Hello, World!\n";
+    
     DQueue d;
-    d.PushLeft(4);
-    d.PushLeft(5);
-    d.PushLeft(6);
+    cout<<d.PopRight()<<endl;
+    d.PushLeft(1);
+    int t = d.PopLeft();
+    cout <<t<<endl;
     return 0;
 }
-
 
