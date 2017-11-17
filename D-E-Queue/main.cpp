@@ -6,9 +6,8 @@
 //  Copyright © 2017 Imad Collin. All rights reserved.
 //
 
-#define transaction 1
-
 #include <iostream>
+#define  transaction 1
 using namespace std;
 class DQueue
 {
@@ -30,7 +29,9 @@ public:
     // pushes the given value to the left end of the deque
     void PushLeft(int val)
     {
-
+#if transaction
+        __transaction_atomic{
+#endif
             //If no Elements!
             if(leftSentinel==NULL)
             {
@@ -48,13 +49,18 @@ public:
                 leftSentinel->left=temp;
                 leftSentinel=temp;
             }
-
+#if transaction
+        }
+#endif
     }
     
     // pushes the given value to the right end of the deque
     void PushRight(int val)
     {
-
+#if transaction
+        __transaction_atomic{
+#endif
+            
             //If no Elments!
             if(leftSentinel==NULL){
                 rightSentinel=new (struct QNode);
@@ -71,13 +77,18 @@ public:
                 rightSentinel->right=temp;
                 rightSentinel=temp;
             }
-
+#if transaction
+        }
+#endif
+        
     }
     
     // pops the leftmost value from the deque (-1 if empty)
     int PopLeft()
     {
-
+#if transaction
+        __transaction_atomic{
+#endif
             if(leftSentinel==NULL){
                 return -1;
             }
@@ -91,45 +102,55 @@ public:
                 }
                 return temp_val;
             }
-
+#if transaction
+        }
+#endif
     }
     
     // pops the rightmost value from the deque (-1 if empty)
     int PopRight()
     {
-
+#if transaction
+        __transaction_atomic{
+#endif
+            
             if(leftSentinel==NULL){
                 return -1;
             }
             else{
                 int temp_val = rightSentinel->val;
                 if(rightSentinel->left!=NULL){
-                QNode* temp_node = rightSentinel->left;
-                delete(rightSentinel);
-                
-                rightSentinel=temp_node;
+                    QNode* temp_node = rightSentinel->left;
+                    delete(rightSentinel);
+                    
+                    rightSentinel=temp_node;
                 }
                 if(leftSentinel!=NULL){
                     rightSentinel->right=NULL;
                 }
                 return temp_val;
             }
-
+            
+        }
+#if transaction
     }
+#endif
 };
 
 int main(int argc, const char * argv[]) {
     // insert code here...
-    cout<<"test...."<<endl;
+#if transaction
+    cout<<"testing... "<<endl;
+#endif
     DQueue d;
     int i;
     for(i=0 ;i<10;i++){
         d.PushLeft(i);
-      //  d.PushRight(i);
+        //  d.PushRight(i);
     }
-      //  cout<<d.PopLeft()<<endl;
-
-
+    cout<<d.PopLeft()<<endl;
+    
+    
     return 0;
 }
 
